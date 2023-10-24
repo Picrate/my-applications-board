@@ -21,6 +21,8 @@ public class AppliesJsonTest {
 
     @Autowired
     private JacksonTester<Apply> json;
+
+    @Autowired
     private JacksonTester<Apply[]> jsonList;
     private Apply[] applies;
 
@@ -28,9 +30,6 @@ public class AppliesJsonTest {
 
     @BeforeEach
     void setup() throws ParseException {
-
-
-
         applies = Arrays.array(
                 new Apply(1L, "My-First-Apply", LocalDateTime.parse("2023-10-12T00:00:00.000+00:00", formatter)),
                 new Apply(2L, "My-Second-Apply", LocalDateTime.parse("2023-10-13T23:59:00.000+00:00", formatter)),
@@ -70,6 +69,36 @@ public class AppliesJsonTest {
         assertThat(json.parseObject(expected).id()).isEqualTo(1);
         assertThat(json.parseObject(expected).name()).isEqualTo("My-First-Apply");
         assertThat(json.parseObject(expected).dateCreated()).isEqualTo(testApply.dateCreated().format(formatter));
+    }
+
+    @Test
+    public void applyListSerializationTest() throws IOException {
+        assertThat(jsonList.write(applies)).isStrictlyEqualToJson("expectedList.json");
+    }
+
+    @Test
+    public void applyListDeSerializationTest() throws IOException {
+        String expectedList = """
+                [
+                  {
+                    "id": 1,
+                    "name": "My-First-Apply",
+                    "dateCreated": "2023-10-12T00:00:00"
+                  },
+                  {
+                    "id": 2,
+                    "name": "My-Second-Apply",
+                    "dateCreated": "2023-10-13T23:59:00"
+                  },
+                  {
+                    "id": 3,
+                    "name": "My-Third-Apply",
+                    "dateCreated": "2023-10-14T12:01:00"
+                  }
+                ]
+                                
+                """;
+        assertThat(jsonList.parse(expectedList)).isEqualTo(applies);
     }
 
 
