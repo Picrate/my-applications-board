@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS apply;
+CREATE TABLE apply
+(
+    id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name    VARCHAR(250) NOT NULL,
+    date_created    TIMESTAMP NOT NULL
+);

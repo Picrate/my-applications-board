@@ -1,8 +1,6 @@
 package info.patriceallary.myapplicationsboard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.StdDateFormat;
+import info.patriceallary.myapplicationsboard.domain.Apply;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +29,16 @@ public class AppliesJsonTest {
     @BeforeEach
     void setup() throws ParseException {
         applies = Arrays.array(
-                new Apply(1L, "My-First-Apply", LocalDateTime.parse("2023-10-12T00:00:00.000+00:00", formatter)),
-                new Apply(2L, "My-Second-Apply", LocalDateTime.parse("2023-10-13T23:59:00.000+00:00", formatter)),
-                new Apply(3L, "My-Third-Apply", LocalDateTime.parse("2023-10-14T12:01:00.000+00:00", formatter))
+                new Apply( "My-First-Apply", LocalDateTime.parse("2023-10-12T00:00:00.000+00:00", formatter)),
+                new Apply("My-Second-Apply", LocalDateTime.parse("2023-10-13T23:59:00.000+00:00", formatter)),
+                new Apply( "My-Third-Apply", LocalDateTime.parse("2023-10-14T12:01:00.000+00:00", formatter))
         );
     }
 
     @Test
     public void applySerializationTest() throws ParseException, IOException {
 
-        Apply apply = new Apply(1L, "My-First-Apply", LocalDateTime.parse("2023-10-13T23:59:00", formatter));
+        Apply apply = new Apply("My-First-Apply", LocalDateTime.parse("2023-10-13T23:59:00", formatter));
         // Check if apply object is esqual to json object store in "expected.json" file
         assertThat(json.write(apply)).isStrictlyEqualToJson("expected.json");
         // Check json has id parameter and is esqual to 1
@@ -51,7 +49,7 @@ public class AppliesJsonTest {
         assertThat(json.write(apply)).extractingJsonPathStringValue("@.name").isEqualToIgnoringCase("My-First-Apply");
         // Check Json has dateCreated paramter with "2023-10-13T23:59:00" Value
         assertThat(json.write(apply)).hasJsonPathStringValue("@.dateCreated");
-        assertThat(json.write(apply)).extractingJsonPathStringValue("@.dateCreated").isEqualToIgnoringWhitespace(apply.dateCreated().format(formatter));
+        assertThat(json.write(apply)).extractingJsonPathStringValue("@.dateCreated").isEqualToIgnoringWhitespace(apply.getDateCreated().format(formatter));
     }
 
     @Test
@@ -63,12 +61,12 @@ public class AppliesJsonTest {
                   "dateCreated" : "2023-10-13T23:59:00"
                 }
                 """;
-        Apply testApply = new Apply(1L, "My-First-Apply", LocalDateTime.parse("2023-10-13T23:59:00", formatter));
+        Apply testApply = new Apply( "My-First-Apply", LocalDateTime.parse("2023-10-13T23:59:00", formatter));
 
         assertThat(json.parseObject(expected)).isEqualTo(testApply);
-        assertThat(json.parseObject(expected).id()).isEqualTo(1);
-        assertThat(json.parseObject(expected).name()).isEqualTo("My-First-Apply");
-        assertThat(json.parseObject(expected).dateCreated()).isEqualTo(testApply.dateCreated().format(formatter));
+        assertThat(json.parseObject(expected).getId()).isEqualTo(1);
+        assertThat(json.parseObject(expected).getName()).isEqualTo("My-First-Apply");
+        assertThat(json.parseObject(expected).getDateCreated()).isEqualTo(testApply.getDateCreated().format(formatter));
     }
 
     @Test
