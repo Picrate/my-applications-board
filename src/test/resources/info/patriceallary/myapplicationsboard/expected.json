@@ -1,5 +1,41 @@
 {
-  "id": 1,
+  "id": 0,
   "name": "My-First-Apply",
-  "dateCreated" : "2023-10-13T23:59:00"
+  "dateCreated" : "2023-10-12T00:00:00",
+  "dateInterview" : null,
+  "dateRaised" : null,
+  "dateSent" : null,
+  "enterprise" :
+  {
+    "id": 0,
+    "name" : "testEnterprise",
+    "phone": null,
+    "notes" :  null,
+    "address" :
+    {
+      "id" : 0,
+      "address1" : "address1",
+      "address2" : null,
+      "zipCode" : null,
+      "city" : "City"
+    },
+    "type" :
+    {
+      "id" : 0,
+      "type" : "testType"
+    },
+    "activity" :
+    {
+      "id" : 0,
+      "activity" : "testActivity"
+    },
+    "contacts":null
+  },
+  "jobResult" :
+  {
+    "id" : 0,
+    "result" : "testResult"
+  },
+  "url" : null
+
 }
