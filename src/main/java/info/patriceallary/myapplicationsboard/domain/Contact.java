@@ -1,5 +1,6 @@
 package info.patriceallary.myapplicationsboard.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -28,7 +29,7 @@ public class Contact implements Serializable {
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "role_id")
     private ContactRole contactRole;
 
@@ -36,20 +37,11 @@ public class Contact implements Serializable {
     @JoinColumn(name = "title_id")
     private ContactTitle title;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
 
     protected Contact() {
-    }
-
-    public Contact(String firstname, String lastname, Address address, ContactRole contactRole, ContactTitle title, Enterprise enterprise) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.address = address;
-        this.contactRole = contactRole;
-        this.title = title;
-        this.enterprise = enterprise;
     }
 
     public Contact(String firstname, String lastname, String phone, String email, String linkedInURL, Address address, ContactRole contactRole, ContactTitle title, Enterprise enterprise) {
@@ -61,6 +53,22 @@ public class Contact implements Serializable {
         this.address = address;
         this.contactRole = contactRole;
         this.title = title;
+        this.enterprise = enterprise;
+    }
+
+    public Contact(String firstname, String lastname, Address address, ContactRole contactRole, ContactTitle title, Enterprise enterprise) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.address = address;
+        this.contactRole = contactRole;
+        this.title = title;
+        this.enterprise = enterprise;
+    }
+
+    public Contact(String firstname, String lastname, ContactRole contactRole, Enterprise enterprise) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.contactRole = contactRole;
         this.enterprise = enterprise;
     }
 

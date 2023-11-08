@@ -1,9 +1,11 @@
 package info.patriceallary.myapplicationsboard.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.sql.Clob;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,20 +37,16 @@ public class Enterprise implements Serializable {
     @JoinColumn(name = "activity_id")
     private EnterpriseActivity activity;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "enterprise_id")
-    private List<Contact> contacts;
+    protected Enterprise() {
+    }
 
-    protected Enterprise(){}
-
-    public Enterprise(String name, String phone, String notes, Address address, EnterpriseType type, EnterpriseActivity activity, List<Contact> contacts) {
+    public Enterprise(String name, String phone, String notes, Address address, EnterpriseType type, EnterpriseActivity activity) {
         this.name = name;
         this.phone = phone;
         this.notes = notes;
         this.address = address;
         this.type = type;
         this.activity = activity;
-        this.contacts = contacts;
     }
 
     public Enterprise(String name, Address address, EnterpriseType type, EnterpriseActivity activity) {
@@ -114,14 +112,6 @@ public class Enterprise implements Serializable {
         this.activity = activity;
     }
 
-    public List<Contact> getContacts() {
-        return contacts;
-    }
-
-    public void setContacts(List<Contact> contacts) {
-        this.contacts = contacts;
-    }
-
     @Override
     public String toString() {
         return "Enterprise{" +
@@ -132,7 +122,6 @@ public class Enterprise implements Serializable {
                 ", address=" + address +
                 ", type=" + type +
                 ", activity=" + activity +
-                ", contacts=" + contacts +
                 '}';
     }
 
@@ -141,11 +130,11 @@ public class Enterprise implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Enterprise that = (Enterprise) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(phone, that.phone) && Objects.equals(notes, that.notes) && Objects.equals(address, that.address) && Objects.equals(type, that.type) && Objects.equals(activity, that.activity) && Objects.equals(contacts, that.contacts);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(phone, that.phone) && Objects.equals(notes, that.notes) && Objects.equals(address, that.address) && Objects.equals(type, that.type) && Objects.equals(activity, that.activity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, phone, notes, address, type, activity, contacts);
+        return Objects.hash(id, name, phone, notes, address, type, activity);
     }
 }

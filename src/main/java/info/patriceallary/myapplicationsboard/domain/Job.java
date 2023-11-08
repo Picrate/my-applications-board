@@ -28,7 +28,6 @@ public class Job implements Serializable {
     @JoinColumn(name = "status_id")
     private JobResult jobResult;
     @ManyToOne
-    @JoinColumn(name = "enterprise_id")
     private Enterprise enterprise;
     protected Job() {}
 

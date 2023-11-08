@@ -13,7 +13,7 @@ public class ContactRole implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String role;
 
     public ContactRole(String role) {
