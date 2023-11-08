@@ -110,9 +110,9 @@ CREATE TABLE contacts
     phone VARCHAR(50),
     email VARCHAR(50),
     linkedin_profile VARCHAR(250),
-    address_id BIGINT NOT NULL,
+    address_id BIGINT,
     role_id BIGINT NOT NULL,
-    title_id BIGINT NOT NULL,
+    title_id BIGINT,
     enterprise_id BIGINT NOT NULL
 );
 
