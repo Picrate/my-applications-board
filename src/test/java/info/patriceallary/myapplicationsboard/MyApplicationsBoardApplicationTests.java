@@ -2,28 +2,24 @@ package info.patriceallary.myapplicationsboard;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import info.patriceallary.myapplicationsboard.domain.Address;
-import info.patriceallary.myapplicationsboard.domain.ContactRole;
-import info.patriceallary.myapplicationsboard.domain.Enterprise;
-import info.patriceallary.myapplicationsboard.domain.Job;
-import info.patriceallary.myapplicationsboard.repositories.AddressRepository;
-import info.patriceallary.myapplicationsboard.repositories.EnterpriseRepository;
-import info.patriceallary.myapplicationsboard.repositories.JobResultRepository;
+import info.patriceallary.myapplicationsboard.domain.*;
+import info.patriceallary.myapplicationsboard.repositories.*;
 import net.minidev.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
-import javax.swing.text.AbstractDocument;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,6 +33,14 @@ class MyApplicationsBoardApplicationTests {
     EnterpriseRepository enterpriseRepository;
     @Autowired
     JobResultRepository jobResultRepository;
+    @Autowired
+    ContactRoleRepository contactRoleRepository;
+    @Autowired
+    ContactTitleRepository contactTitleRepository;
+    @Autowired
+    AddressRepository addressRepository;
+    @Autowired
+    ContactRepository contactRepository;
 
     // DateTimeFormatter to ISO8601 Datetime
     DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
@@ -71,7 +75,7 @@ class MyApplicationsBoardApplicationTests {
 
     // Check that Get Address does not exist | HTTP Response : 404 NOT_FOUND | BODY empty
     @Test
-    void shouldNotReturnAnAddressThatDoesNotExist(){
+    void shouldNotReturnAnAddressThatDoesNotExist() {
         ResponseEntity<String> response = restTemplate
                 .getForEntity("/address/99", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -81,7 +85,7 @@ class MyApplicationsBoardApplicationTests {
     // Address Update in PUT Requests | HTTP Response : 204 NO_CONTENT | BODY empty
     @Test
     @DirtiesContext
-    void shouldUpdateAnExistingAddress(){
+    void shouldUpdateAnExistingAddress() {
         Address modifiedAddress = new Address("Modified Street", "123", "", "New City");
         HttpEntity<Address> httpEntity = new HttpEntity<>(modifiedAddress);
         ResponseEntity<Void> response = restTemplate
@@ -107,7 +111,7 @@ class MyApplicationsBoardApplicationTests {
     // Check not Updating a non existing address in PUT Requests | HTTP Response : 404 NOT_FOUND
     @Test
     @DirtiesContext
-    void shouldNotUpdateANonExistingAddress(){
+    void shouldNotUpdateANonExistingAddress() {
         Address modifiedAddress = new Address("Modified Street", "123", "", "New City");
         HttpEntity<Address> httpEntity = new HttpEntity<>(modifiedAddress);
         ResponseEntity<Void> response = restTemplate
@@ -119,11 +123,11 @@ class MyApplicationsBoardApplicationTests {
     // Create a new address Response | HTTP Response : 201 CREATED | HEADER : URL of new Address
     @Test
     @DirtiesContext
-    public void shouldCreateANewAddress(){
-        Address newAddress = new Address("New Address","New City");
+    public void shouldCreateANewAddress() {
+        Address newAddress = new Address("New Address", "New City");
         HttpEntity<Address> httpEntity = new HttpEntity<Address>(newAddress);
         ResponseEntity<Void> response = restTemplate
-                .postForEntity("/address",httpEntity, Void.class);
+                .postForEntity("/address", httpEntity, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         URI newAddressUri = response.getHeaders().getLocation();
         assertThat(newAddressUri.getPath()).isNotNull();
@@ -140,16 +144,16 @@ class MyApplicationsBoardApplicationTests {
     // Delete an existingAddress | HTTP Response : 204 NO_CONTENT | BODY empty
     @Test
     @DirtiesContext
-    public void shouldDeleteAnExistingAddress(){
+    public void shouldDeleteAnExistingAddress() {
 
-        Address newAddress = new Address("New Address","New City");
+        Address newAddress = new Address("New Address", "New City");
         HttpEntity<Address> httpEntity = new HttpEntity<Address>(newAddress);
         ResponseEntity<Void> postResponse = restTemplate
-                .postForEntity("/address",httpEntity, Void.class);
+                .postForEntity("/address", httpEntity, Void.class);
         URI newAddressUri = postResponse.getHeaders().getLocation();
 
         ResponseEntity<Void> response = restTemplate
-                .exchange(newAddressUri.getPath(), HttpMethod.DELETE,null, Void.class);
+                .exchange(newAddressUri.getPath(), HttpMethod.DELETE, null, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         ResponseEntity<String> getResponse = restTemplate
@@ -162,9 +166,9 @@ class MyApplicationsBoardApplicationTests {
     // Delete a non existing Address | HTTP Response : 404 NOT_FOUND
     @Test
     @DirtiesContext
-    public void shouldNotDeleteAnNonExistingAddress(){
+    public void shouldNotDeleteAnNonExistingAddress() {
         ResponseEntity<Void> response = restTemplate
-                .exchange("/address/99", HttpMethod.DELETE,null, Void.class);
+                .exchange("/address/99", HttpMethod.DELETE, null, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
@@ -174,7 +178,7 @@ class MyApplicationsBoardApplicationTests {
 
     // Get an existing ContactRole | HTTP Response : 200 OK | BODY ContactRole JSON Object
     @Test
-    public void shouldGetAnExistingContactRole(){
+    public void shouldGetAnExistingContactRole() {
         ResponseEntity<String> response = restTemplate
                 .getForEntity("/contacts/roles/1", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -187,7 +191,7 @@ class MyApplicationsBoardApplicationTests {
 
     // Do not get a non existing ContactRole | HTTP Response : 404 NOT_FOUND | BODY : Empty
     @Test
-    public void shouldNotGetANonExistingContactRole(){
+    public void shouldNotGetANonExistingContactRole() {
         ResponseEntity<String> response = restTemplate
                 .getForEntity("/contacts/roles/99", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -197,7 +201,7 @@ class MyApplicationsBoardApplicationTests {
     // ContactRole Update in PUT Requests | HTTP Response : 204 NO_CONTENT | BODY empty
     @Test
     @DirtiesContext
-    public void shouldUpdateAnExistingContactRole(){
+    public void shouldUpdateAnExistingContactRole() {
         ContactRole newRole = new ContactRole("New Role");
         HttpEntity<ContactRole> httpEntity = new HttpEntity<>(newRole);
         ResponseEntity<Void> updateResponse = restTemplate
@@ -218,7 +222,7 @@ class MyApplicationsBoardApplicationTests {
     // Non Existing ContactRole Update in PUT Requests | HTTP Response : 404 NOT_FOUND | BODY empty
     @Test
     @DirtiesContext
-    public void shouldNotUpdateANonExistingContactRole(){
+    public void shouldNotUpdateANonExistingContactRole() {
         ContactRole newRole = new ContactRole("New Role");
         HttpEntity<ContactRole> httpEntity = new HttpEntity<>(newRole);
         ResponseEntity<Void> updateResponse = restTemplate
@@ -227,7 +231,7 @@ class MyApplicationsBoardApplicationTests {
         assertThat(updateResponse.getBody()).isNull();
     }
 
-    // New Role Saved in POST Request | HTTP Rersponse : 201 CREATED | HEADER : URL of new ContactRole
+    // New Role Saved in POST Request | HTTP Response : 201 CREATED | HEADER : URL of new ContactRole
     @Test
     @DirtiesContext
     public void shouldCreateANewContactRole() {
@@ -239,6 +243,419 @@ class MyApplicationsBoardApplicationTests {
         assertThat(postResponse.getHeaders().getLocation().getPath()).contains("/contacts/roles/4");
     }
 
+    // Delete existing Role | HTTP Response : 204 NO_CONTENT
+    @Test
+    @DirtiesContext
+    public void shouldDeleteAnExistingContactRole() {
+        // Create a new Role
+        ContactRole newRole = new ContactRole("New Role");
+        HttpEntity<ContactRole> httpEntity = new HttpEntity<>(newRole);
+        ResponseEntity<Void> postResponse = restTemplate
+                .postForEntity("/contacts/roles", httpEntity, Void.class);
+        // Delete the new Role
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange("/contacts/roles/4", HttpMethod.DELETE, null, Void.class);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        // Check newRole has been deleted
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/roles/4", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // Not Delete non existing Role | HTTP Response : 404 NOT_FOUND
+    @Test
+    public void shouldNotDeleteANonExistingContactRole() {
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange("/contacts/roles/4", HttpMethod.DELETE, null, Void.class);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // Get All Roles | HTTP Rersponse : 200 OK | BODY : All ContactRoles
+    @Test
+    public void shouldReturnAListOfContactRoles() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/roles", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
+        Number count = documentContext.read("$.length()");
+        assertThat(count).isEqualTo(3);
+        JSONArray ids = documentContext.read("$..id");
+        assertThat(ids).containsExactlyInAnyOrder(1, 2, 3);
+        JSONArray roles = documentContext.read("$..role");
+        assertThat(roles).containsExactlyInAnyOrder(
+                "Chargé de recrutement IT",
+                "Responsable des Ressources Humaines",
+                "Dirigeant"
+        );
+    }
+
+    // Get a Page Of ContactRoles | HTTP Response : 200 OK | BODY : Only 2 roles sorts by role ASC
+    @Test
+    public void shouldReturnAPageOfContactRoles() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/roles?page=0&size=2", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number count = context.read("$.length()");
+        assertThat(count).isEqualTo(2);
+        JSONArray roles = context.read("$..role");
+        assertThat(roles).containsExactly(
+                "Chargé de recrutement IT",
+                "Dirigeant"
+        );
+    }
+
+    /**
+     * ContactTitle RESTS Tests
+     */
+
+    @Test
+    public void shouldReturnAExisitingContactTitle() {
+        ResponseEntity<String> response = restTemplate
+                .getForEntity("/contacts/titles/1", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        DocumentContext context = JsonPath.parse(response.getBody());
+        Number id = context.read("$.id");
+        assertThat(id).isEqualTo(1);
+        String title = context.read("$.title");
+        assertThat(title).isEqualTo("Mr");
+    }
+
+    @Test
+    public void shouldNotReturnANonExisitingContactTitle() {
+        ResponseEntity<String> response = restTemplate
+                .getForEntity("/contacts/titles/99", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isBlank();
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldUpdateAnExistingContactTitle() {
+        ContactTitle updatedTitle = new ContactTitle("Updated Title");
+        HttpEntity<ContactTitle> httpEntity = new HttpEntity<>(updatedTitle);
+        ResponseEntity<Void> updateResponse = restTemplate
+                .exchange("/contacts/titles/1", HttpMethod.PUT, httpEntity, Void.class);
+        assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(updateResponse.getBody()).isNull();
+
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/titles/1", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getResponse.getBody()).isNotNull();
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number id = context.read("$.id");
+        assertThat(id).isEqualTo(1);
+        String title = context.read("$.title");
+        assertThat(title).isEqualTo("Updated Title");
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldNotUpdateAnNonExistingContactTitle() {
+        ContactTitle updatedTitle = new ContactTitle("Updated Title");
+        HttpEntity<ContactTitle> httpEntity = new HttpEntity<>(updatedTitle);
+        ResponseEntity<Void> updateResponse = restTemplate
+                .exchange("/contacts/titles/99", HttpMethod.PUT, httpEntity, Void.class);
+        assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(updateResponse.getBody()).isNull();
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldSaveANewContactTitle() {
+        ContactTitle newTitle = new ContactTitle("New Title");
+        HttpEntity<ContactTitle> httpEntity = new HttpEntity<>(newTitle);
+        ResponseEntity<Void> postResponse = restTemplate
+                .postForEntity("/contacts/titles", httpEntity, Void.class);
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        URI locationOfNewTitle = postResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity(locationOfNewTitle, String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getResponse.getBody()).isNotNull();
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number id = context.read("$.id");
+        assertThat(id).isEqualTo(3);
+        String title = context.read("$.title");
+        assertThat(title).isEqualTo("New Title");
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldNotSaveAnEmptyContactTitle() {
+        ContactTitle newTitle = new ContactTitle("");
+        HttpEntity<ContactTitle> httpEntity = new HttpEntity<>(newTitle);
+        ResponseEntity<Void> postResponse = restTemplate
+                .postForEntity("/contacts/titles", httpEntity, Void.class);
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldDeleteAnExistingContactTitle() {
+
+        ContactTitle newTitle = new ContactTitle("New Title");
+        HttpEntity<ContactTitle> httpEntity = new HttpEntity<>(newTitle);
+        ResponseEntity<Void> postResponse = restTemplate
+                .postForEntity("/contacts/titles", httpEntity, Void.class);
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        URI locationOfNewTitle = postResponse.getHeaders().getLocation();
+
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange(locationOfNewTitle, HttpMethod.DELETE, null, Void.class);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    public void shouldNotDeleteANonExistingContactTitle() {
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange("/contacts/titles/99", HttpMethod.DELETE, null, Void.class);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void shouldReturnAListOfContactTitle() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/titles", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number count = context.read("$.length()");
+        assertThat(count).isEqualTo(2);
+        JSONArray titles = context.read("$..title");
+        assertThat(titles).containsExactlyInAnyOrder("Mr", "Mme");
+    }
+
+    /**
+     * Contact REST Tests
+     */
+
+    @Test
+    public void shouldReturnAContactById() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/1", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
+        Number id = documentContext.read("$.id");
+        assertThat(id).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldNotReturnAContactThtDoesNotExist() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/99", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldUpdateAnExistingContact() {
+        Contact updatedContact = this.contactRepository.findById(1);
+        updatedContact.setFirstname("firstname");
+        updatedContact.setLastname("lastname");
+        System.out.println(updatedContact);
+        HttpEntity<Contact> httpEntity = new HttpEntity<>(updatedContact);
+        ResponseEntity<Void> updateResponse = restTemplate
+                .exchange("/contacts/1", HttpMethod.PUT, httpEntity, Void.class);
+        assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        // check modifications have been applied
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/1", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number id = context.read("$.id");
+        assertThat(id).isEqualTo(1);
+        String firstname = context.read("$.firstname");
+        String lastname = context.read("$.lastname");
+        assertThat(firstname).isEqualTo("firstname");
+        assertThat(lastname).isEqualTo("lastname");
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldNotUpdateAnNonExistingContact() {
+        Contact updatedContact = this.contactRepository.findById(1);
+        updatedContact.setFirstname("firstname");
+        updatedContact.setLastname("lastname");
+        System.out.println(updatedContact);
+        HttpEntity<Contact> httpEntity = new HttpEntity<>(updatedContact);
+        ResponseEntity<Void> updateResponse = restTemplate
+                .exchange("/contacts/99", HttpMethod.PUT, httpEntity, Void.class);
+        assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DirtiesContext
+    public void shouldCreateANewContact() {
+
+        Contact newContact = new Contact(
+                "firstname",
+                "lastname",
+                "0123456789",
+                "contact@foo.bar",
+                "https://www.linkedin.com/newcontact",
+                this.addressRepository.findById(1),
+                this.contactRoleRepository.findById(1),
+                this.contactTitleRepository.findById(1), this.enterpriseRepository.findById(1)
+        );
+        HttpEntity<Contact> httpEntity = new HttpEntity<>(newContact);
+        ResponseEntity<Void> postResponse = restTemplate
+                .postForEntity("/contacts", httpEntity, Void.class);
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        URI locationOfNewContact = postResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity(locationOfNewContact, String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
+        Number id = documentContext.read("$.id");
+        assertThat(id).isEqualTo(4);
+        String firstname = documentContext.read("$.firstname");
+        assertThat(firstname).isEqualTo(newContact.getFirstname());
+        String lastname = documentContext.read("$.lastname");
+        assertThat(lastname).isEqualTo(newContact.getLastname());
+        assertThat((String) documentContext.read("$.phone")).isEqualTo(newContact.getPhone());
+        assertThat((String) documentContext.read("$.email")).isEqualTo(newContact.getEmail());
+        assertThat((String) documentContext.read("$.linkedInURL")).isEqualTo(newContact.getLinkedInURL());
+        List<String> getAddress = documentContext.read("$['address'][*]");
+        assertThat(getAddress).contains(
+                "0452 Summer Ridge Street",
+                "Apt 268",
+                "92119 CEDEX",
+                "Clichy"
+        );
+    }
+
+    @Test
+    @DirtiesContext
+    void shouldDeleteAnExistingContact() {
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange("/contacts/1", HttpMethod.DELETE, null, Void.class);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/contacts/1", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldNotDeleteAnNonExistingContact() {
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange("/contacts/99", HttpMethod.DELETE, null, Void.class);
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Enterprise REST Tests
+     */
+    @Test
+    void shouldReturnAnExistingEnterpriseType() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/enterprises/types/1", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getResponse.getBody()).isNotNull();
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number id = context.read("$.id");
+        assertThat(id).isEqualTo(1);
+        String typeName = context.read("$.type");
+        assertThat(typeName).isEqualTo("PME");
+    }
+
+    @Test
+    void shouldNotReturnANonExistingEnterpriseType() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/enterprises/types/99", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(getResponse.getBody()).isBlank();
+    }
+
+    @Test
+    @DirtiesContext
+    void shouldUpdateAnExistingEnterpriseType() {
+        EnterpriseType updatedType = new EnterpriseType("Updated");
+        HttpEntity<EnterpriseType> httpEntity = new HttpEntity<>(updatedType);
+        ResponseEntity<Void> putResponse = restTemplate
+                .exchange("/enterprises/types/1", HttpMethod.PUT, httpEntity, Void.class);
+        assertThat(putResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/enterprises/types/1", String.class);
+        DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
+        Number id = documentContext.read("$.id");
+        assertThat(id).isEqualTo(1);
+        String typeName = documentContext.read("$.type");
+        assertThat(typeName).isEqualTo("Updated");
+    }
+
+    @Test
+    void shouldNotUpdateANonExistingEnterpriseType() {
+        EnterpriseType updatedType = new EnterpriseType("Updated");
+        HttpEntity<EnterpriseType> httpEntity = new HttpEntity<>(updatedType);
+        ResponseEntity<Void> putResponse = restTemplate
+                .exchange("/enterprises/types/99", HttpMethod.PUT, httpEntity, Void.class);
+        assertThat(putResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldReturnAListOfEnterpriseType() {
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity("/enterprises/types", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getResponse.getBody()).isNotNull();
+        DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
+        Number count = documentContext.read("$.length()");
+        assertThat(count).isEqualTo(3);
+        JSONArray typesIds = documentContext.read("$[*].id");
+        assertThat(typesIds).containsExactlyInAnyOrder(1, 2, 3);
+        JSONArray typesNames = documentContext.read("$[*].type");
+        assertThat(typesNames).asList().containsExactlyInAnyOrder(
+                "PME",
+                "Grand Groupe",
+                "ETI"
+        );
+    }
+
+    @Test
+    @DirtiesContext
+    void shouldCreateANewEnterpriseType() {
+        EnterpriseType newType = new EnterpriseType("New");
+        HttpEntity<EnterpriseType> httpEntity = new HttpEntity<>(newType);
+        ResponseEntity<Void> postResponse = restTemplate
+                .postForEntity("/enterprises/types", httpEntity, Void.class);
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        URI location = postResponse.getHeaders().getLocation();
+
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity(location, String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(getResponse.getBody()).isNotNull();
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number id = context.read("$.id");
+        assertThat(id).isEqualTo(4);
+        String typeName = context.read("$.type");
+        assertThat(typeName).isEqualTo("New");
+    }
+    @Test
+    @DirtiesContext
+    void shouldDeleteAnExistingEnterpriseType() {
+        EnterpriseType newType = new EnterpriseType("New");
+        HttpEntity<EnterpriseType> httpEntity = new HttpEntity<>(newType);
+        ResponseEntity<Void> postResponse = restTemplate
+                .postForEntity("/enterprises/types", httpEntity, Void.class);
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        URI location = postResponse.getHeaders().getLocation();
+
+        ResponseEntity<Void> deleteResponse = restTemplate
+                .exchange(location, HttpMethod.DELETE, null, Void.class);
+
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> getResponse = restTemplate
+                .getForEntity(location, String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
 
 
     /**
@@ -304,7 +721,6 @@ class MyApplicationsBoardApplicationTests {
     void shouldReturnAListOfJobs() {
         ResponseEntity<String> getResponse = restTemplate
                 .getForEntity("/jobs", String.class);
-
         // Check GET Method exists
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         // Check body contains list of jobs
@@ -313,11 +729,11 @@ class MyApplicationsBoardApplicationTests {
         int jobsCount = documentContext.read("$.length()");
         assertThat(jobsCount).isEqualTo(3);
         // check each Job
-        JSONArray ids = documentContext.read("$..id");
+        JSONArray ids = documentContext.read("$[*].id");
         assertThat(ids).asList().containsExactlyInAnyOrder(1, 2, 3);
-        JSONArray names = documentContext.read("$..name");
+        JSONArray names = documentContext.read("$[*].name");
         assertThat(names)
-                .asList().containsExactlyInAnyOrder("My-First-Job", "My-Second-Job", "My-Third-Job");
+                .asList().containsExactlyInAnyOrder("My-First-Apply", "My-Second-Apply", "My-Third-Apply");
         JSONArray createdDates = documentContext.read("$..dateCreated");
         assertThat(createdDates).asList().containsExactlyInAnyOrder("2023-10-12T00:00:00", "2023-10-13T23:59:00", "2023-10-14T12:01:00");
     }
