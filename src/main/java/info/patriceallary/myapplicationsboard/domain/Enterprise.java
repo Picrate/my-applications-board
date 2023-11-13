@@ -25,15 +25,15 @@ public class Enterprise implements Serializable {
     @Column(name = "NOTES", columnDefinition = "CLOB")
     private String notes;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.REFRESH,CascadeType.MERGE})
     @JoinColumn(name = "type_id")
     private EnterpriseType type;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.MERGE})
     @JoinColumn(name = "activity_id")
     private EnterpriseActivity activity;
 
